@@ -9,9 +9,9 @@ REGRESS = definitions
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 
-
+TARGET_DIR = $(PG_HOME)/pg2l
 install : pg2l
 pg2l :
-    mkdir -p $(TARGET_DIR)
-    cp ./exp_lob_from_ora.pl $(TARGET_DIR)
-    chown -R enterprisedb:enterprisedb $(TARGET_DIR)
+	mkdir -p $(TARGET_DIR)
+	cp ./exp_lob_from_ora.pl $(TARGET_DIR)
+	chown -R enterprisedb:enterprisedb $(TARGET_DIR)
