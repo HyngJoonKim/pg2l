@@ -90,7 +90,7 @@ This is perl 5, version 32, subversion 1 (v5.32.1) built for x86_64-linux-thread
 
 3. Create Extension
 
-   If you encounted error like 'make command not found' you need to install the make utility as figure below.  [run as root user]
+   If you encountered error like 'make command not found' you need to install the make utility as figure below. [run as root user].
 
    ```bash
    yum install -y make
