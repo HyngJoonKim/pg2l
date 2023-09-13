@@ -1,0 +1,5 @@
+# char_count_c extension
+comment = 'perl function to count number of specified characters'
+default_version = '1.0'
+module_pathname = '$libdir/pg2l'
+relocatable = true
