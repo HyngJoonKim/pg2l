@@ -18,7 +18,7 @@ See below figure.
 
 
 
-<img src="/Users/hyungjoon.kim/Library/Application Support/typora-user-images/image-20230912180225257.png" alt="image-20230912180225257" style="zoom:50%;" />
+<img src="image-20230912180225257.png" alt="image-20230912180225257" style="zoom:50%;" />
 
 
 
