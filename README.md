@@ -61,10 +61,17 @@ Contents
 
       
 
-      * After installing the Oracle Instnace Client  
+      * After installing the Oracle Instant Client  You must set the environment variable regarding the oracle like figure below in your profile on OS Account.
 
-
-
+      ```bash
+      export ORACLE_HOME=/usr/lib/oracle/21/client64/
+      export TNS_ADMIN=/usr/lib/oracle/21/client64/bin
+      export PATH=${PATH}:$HOME/bin:$ORACLE_HOME/bin
+      export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$ORACLE_HOME/lib
+      ```
+      
+      
+   
 
 2. Perl environment. (Run as PostgreSQL Instance Owner like postgresql)
 
@@ -79,21 +86,107 @@ This is perl 5, version 32, subversion 1 (v5.32.1) built for x86_64-linux-thread
 
 
 
-
+# 
 
 3. Create Extension
 
-   After donwnload extension 
+   If you encounted error like 'make command not found' you need to install the make utility as figure below.  [run as root user]
 
    ```bash
-   psql -d edb -c "select pg2l_set_conf('PG2L.ORA_SID','ORCLCDB');"
+   yum install -y make
    ```
 
    
 
+   To Create PostgreSQL extension we need to pg_config.   So Add path which bin directory of postgresql in root account profiles as figue below. 
+
+   And pg2l extension will be running external perl script. Basically It's located in owner accound of postgresql.
+
+   So Define the home directory of owner account of postgresql in root account profile as figure below.
+
+   (When 'make install' command to install the extension,  perl script file will be move to under the owner account of postgresql)
+
+   ```bash
+   export PATH=${PATH}:/usr/edb/as15/bin # To use pg_config when install pg2l extension
+   export PG_HOME=/var/lib/edb           # defined basic location of perl script
+   ```
+
+   
+
+   After donwnload pg2l extension from github copy to the contrib directory as below figure. [run as root user]
+
+   ```bash
+   cp pg2l-master.zip /usr/edb/as15/share/contrib
+   cd /usr/edb/as15/share/contrib
+   unzip pg2l-master.zip
+   ```
+
+   
+
+   run make install  [run as root user]
+
+   ```bash
+   cd pg2l-master
+   make install
+   ```
+
+   If you have setting environment variable properly You may see the below messages after 'make install command' 
+
+   ```bash
+   $make install
+   /usr/bin/mkdir -p '/usr/edb/as15/share/extension'
+   /usr/bin/mkdir -p '/usr/edb/as15/share/extension'
+   mkdir -p /var/lib/edb/pg2l
+   cp ./exp_lob_from_ora.pl /var/lib/edb/pg2l
+   chown -R enterprisedb:enterprisedb /var/lib/edb/pg2l
+   /usr/bin/install -c -m 644 .//pg2l.control '/usr/edb/as15/share/extension/'
+   /usr/bin/install -c -m 644 .//pg2l--1.0.sql  '/usr/edb/as15/share/extension/
+   ```
+
+   Switch user to the owner of Postgres like enterprisedb account to create extension like below figure.
+   pg2l extension written perl script so we need to plperu extension first then create extension for pg2l 
+
+   [run as owner of postgresql account]
+
+   ```bash
+   $ su - enterprisedb
+   $ psql -d edb -c "CREATE EXTENSION plperlu"
+   CREATE EXTENSION
+   $ psql -d edb -c "CREATE EXTENSION pg2l"
+   
+   ```
+
+
 4. Configuration
 
+​	To connect to a Oracle database we have to configuration for the target database (oracle) information lists. 
 
+* Host IP
+
+* Service Port
+
+* SID
+
+* ID
+
+* PWD
+
+* Target directory to export files
+
+  [examples]
+  After refered example Please do proper your environment. 
+
+  ```bash
+  $ su - enterprisedb
+  $ psql -d edb -c "CREATE EXTENSION plperlu"
+  CREATE EXTENSION
+  $ psql -d edb -c "CREATE EXTENSION pg2l"
+  
+  ```
+
+  
+
+  
 
 5. pg2l's function
 
@@ -128,7 +221,7 @@ Paramenter :
 
 
 
-Examples
+[Examples] 
 
 Set the location of perl in your system
 
@@ -188,7 +281,7 @@ Description : To check the configuration of pg2l which was set by the user you a
 
 
 
-Examples
+[Examples] 
 
 This smaple is setting the location of perl in your systems.
 
@@ -210,7 +303,7 @@ Description : To find out the status of Oracle's connection which is set by a us
 
 
 
-Examples 
+[Examples] 
 
 ```bash
 $ psql -d edb -c "select * from  pg2l_ora_status()"
@@ -222,7 +315,7 @@ $ psql -d edb -c "select * from  pg2l_ora_status()"
 
 
 
-The below sample is setting the wrong port of Oracle. 
+The below sample has set the wrong port of Oracle. 
 After checking the error code of Oracle You have to set the proper values using select pg2l_set_conf functions or You must check for the status of Oracle before using the pg2l extension.
 
 ```bash
@@ -248,7 +341,7 @@ Paramenter : none
 
 Description : We are able to find out the setting value of all of the configurations for pg2l regarding the Oracle Environments including the status of oracle connection.
 
-Examples 
+[Examples] 
 
 ```bash
 $ psql -d edb -c "select * from  pg2l_get_status()"
@@ -283,7 +376,7 @@ and the convention of file name is
 
 
 
-Examples
+[Examples] 
 
 ```
 $ psql -d edb -c "select pg2l_get_filename('select lob_data from ps.ptable where id = 1')"
@@ -293,29 +386,59 @@ $ psql -d edb -c "select pg2l_get_filename('select lob_data from ps.ptable where
 (1 row)
 ```
 
+If running success of pg2l_get_filename You are able to find it through return values which location of files.
+
+
 
 Limition for 1st parameter
 
- * Select column should have only one column which has type is clob (or blob)	
- * group by / order by and joining between tables does not support it. 
-   if you want to complex join with multiple tables you are better using the view object to include what you want to join.
+ * A selected column should have only one column which has the type clob (or blob)	
+ * group by / order by and joining between (among) the tables does not support it. 
+   if you want to complex join with multiple tables you are better using the views object to include what you want to join.
 
 
 
 Caution
 
-* If you have a multiple data export using sql statement you have to check your free disk 
-
-
+* If you have multiple data exports using SQL statements You have to check your free disk before running this extension.
 
 ------
 
 Function : pg2l_get_oid(VARCHAR default '',INTEGER default 1) 
 
 Paramenter :
-	1st : Select statement of oracle side which is export  
+	1st : Select statement of oracle which you want to export to files of oracle.  
 
-Description : Getting status of pg2l regarding the Oracle Environments.
+​	2nd : Deletion flag for exported files. 
+
+​		 if set the 1, after getting OID exported files will be deleted automatically else exported files will not deleted. (default is 1)
+
+Description : Get OID for large object .
+
+
+
+[Examples] 
+
+```
+[enterprisedb@srv1 ~]$ psql -d edb -c "select  pg2l_get_oid('select lob_data from ps.ptable where id = 1')"
+ pg2l_get_oid
+--------------
+        42014
+(1 row)
+```
+
+After running the pg2l_get_oid function If it has success you may get the oid from SQL Statements as return values.
+
+and You can verify data via below SQL Statements below as well.
+
+```
+$ psql -d edb -c "select  * from pg_largeobject where loid = 42014"
+```
+
+
+
+Using this way allows large objects to provide information to tables in a variety of ways.
+See examples sections.
 
 ------
 
@@ -323,7 +446,7 @@ Function : pg2l_get_lob_length(VARCHAR default '',INTEGER default 1)
 
 Paramenter : Returns the length of the lob data You are interested in from Oracle through SQL.
 
-Description : Getting lob value length. (Will be implemented.)
+Description : Getting lob value length. (***Will be implemented***)
 
 ------
 
@@ -331,7 +454,7 @@ Function : pg2l_get_lob_length(VARCHAR default '',INTEGER default 1)
 
 Paramenter : none
 
-Description : Getting status of pg2l regarding the Oracle Environments.(Will be implemented.)
+Description : Getting status of pg2l regarding the Oracle Environments.(***Will be implemented***)
 
 ------
 
@@ -339,7 +462,7 @@ Function : pg2l_get_oid_from_script(VARCHAR default '')
 
 Paramenter : none
 
-Description : Getting status of pg2l regarding the Oracle Environments.(Will be implemented.)
+Description : Getting status of pg2l regarding the Oracle Environments.(***Will be implemented***)
 
 ------
 
@@ -347,9 +470,7 @@ Function :  pg2l_get_filename_from_script(VARCHAR default '')
 
 Paramenter : none
 
-Description : Getting status of pg2l regarding the Oracle Environments.(Will be implemented.)
-
-------
+Description : Getting status of pg2l regarding the Oracle Environments.(***Will be implemented***)
 
 
 
