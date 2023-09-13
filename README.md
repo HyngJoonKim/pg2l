@@ -482,6 +482,3 @@ Description : Getting status of pg2l regarding the Oracle Environments.(***Will 
 
 
 
-
-
-
