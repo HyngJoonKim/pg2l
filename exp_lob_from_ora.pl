@@ -5,7 +5,6 @@ use Time::HiRes qw(time);
 use DBI;
 use Env;
 use Data::Dumper;
-use Try::Tiny;
 
 $\="\n";
 use constant {
